@@ -1,6 +1,5 @@
 import express from 'express';
 import 'dotenv/config';
-import admin from 'firebase-admin';
 import userRoutes from './routes/users.js';
 import eventRoutes from './routes/events.js'
 

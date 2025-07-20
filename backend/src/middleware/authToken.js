@@ -1,4 +1,4 @@
-import { auth } from '../config/firebase.js'; // adjust path if needed
+import { auth } from '../config/firebase.js';
 
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
