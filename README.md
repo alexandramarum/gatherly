@@ -1,1 +1,1 @@
-# Eventy
+# Gatherly
