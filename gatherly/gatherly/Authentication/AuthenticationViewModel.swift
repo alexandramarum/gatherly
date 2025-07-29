@@ -9,10 +9,7 @@ import Foundation
 
 @Observable
 class AuthenticationViewModel {
-    var service: AuthenticationServiceable = AuthenticationService()
     var loadingState: LoadingState = .idle
-    var errMessage: String?
-    
     var username: String
     
     init (username: String = "") {
@@ -20,36 +17,47 @@ class AuthenticationViewModel {
     }
     
     func login(email: String, password: String) {
-        // TODO: Implement login
         Task {
             do {
                 loadingState = .loading
-                let result = try await service.login(email: email, password: password)
-                print("Success!")
-                loadingState = .finished
+                let result = try await AuthenticationService.shared.login(email: email, password: password)
+                if let result = result {
+                    let user = User(
+                        username: self.username,
+                        email: email,
+                        uid: result.uid
+                    )
+                    AuthenticationService.shared.state = .authenticated(user: user)
+                    loadingState = .idle
+                }
             } catch {
-                loadingState = .idle
-                errMessage = error.localizedDescription
+                loadingState = .error(err: error.localizedDescription)
             }
         }
     }
     
     func signup(username: String, email: String, password: String) {
-        // TODO: Implement Signup
         Task {
             do {
                 loadingState = .loading
-                let result = try await service.signup(username: username, email: email, password: password)
-                loadingState = .finished
+                let result = try await AuthenticationService.shared.signup(username: username, email: email, password: password)
+                if let result = result {
+                    let user = User(
+                        username: username,
+                        email: email,
+                        uid: result.uid
+                    )
+                    AuthenticationService.shared.state = .authenticated(user: user)
+                    loadingState = .idle
+                }
             } catch {
-                loadingState = .idle
-                errMessage = error.localizedDescription
+                loadingState = .error(err: error.localizedDescription)
             }
         }
     }
     
-    func validateUsername() -> Bool {
-        // TODO: Validate username
+    func validateCredentials() -> Bool {
+        // TODO: validate w/ regex, etc.
         return true
     }
 }
@@ -58,12 +66,6 @@ extension AuthenticationViewModel {
     enum LoadingState: Equatable {
         case idle
         case loading
-        case finished
-    }
-    
-    enum ErrorState: Error {
-        case idle
-        case invalidUsernameOrPassword
-        case error(error: Error)
+        case error(err: String)
     }
 }

@@ -22,3 +22,9 @@ struct Response: Codable {
     let token: String
     let uid: String
 }
+
+struct User {
+    let username: String?
+    let email: String
+    let uid: String
+}

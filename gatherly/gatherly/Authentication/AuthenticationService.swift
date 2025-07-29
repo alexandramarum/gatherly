@@ -7,12 +7,16 @@
 
 import Foundation
 
-protocol AuthenticationServiceable {
-    func login(email: String, password: String) async throws -> Response?
-    func signup(username: String, email: String, password: String) async throws -> Response?
+enum AuthState {
+    case unauthenticated
+    case authenticated(user: User)
 }
 
+@Observable
 class AuthenticationService: AuthenticationServiceable {
+    public static let shared: AuthenticationService = AuthenticationService()
+    var state: AuthState = .unauthenticated
+    
     let base: URL = URL(string: "https://gatherly-backend-q9vm.onrender.com/")!
     
     func login(email: String, password: String) async throws -> Response? {
@@ -42,6 +46,7 @@ class AuthenticationService: AuthenticationServiceable {
         
         request.httpMethod = "POST"
         request.httpBody = try? JSONEncoder().encode(signup)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let (data, response) = try! await URLSession.shared.data(for: request)
         
@@ -53,6 +58,11 @@ class AuthenticationService: AuthenticationServiceable {
         let result = try JSONDecoder().decode(Response.self, from: data)
         return result
     }
+}
+
+protocol AuthenticationServiceable {
+    func login(email: String, password: String) async throws -> Response?
+    func signup(username: String, email: String, password: String) async throws -> Response?
 }
 
 class AuthenticationServiceMock: AuthenticationServiceable {

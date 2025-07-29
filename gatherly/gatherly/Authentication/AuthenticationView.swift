@@ -9,45 +9,77 @@ import SwiftUI
 
 struct AuthenticationView: View {
     @Bindable private var vm: AuthenticationViewModel = AuthenticationViewModel()
+
+    @State private var isSignup: Bool = false
+    @State private var username: String = ""
     @State private var email: String = ""
     @State private var password: String = ""
-    
+
     var body: some View {
-        VStack {
-            Text("gatherly!")
+        VStack(spacing: 16) {
+            Text("gatherly")
                 .font(.system(size: 60))
                 .fontWeight(.semibold)
+
             VStack(spacing: 10) {
+                if isSignup {
+                    GatherlyTextField(title: "Username", text: $username)
+                        .padding(.horizontal)
+                        .frame(maxWidth: 500)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+
                 GatherlyTextField(title: "Email", text: $email)
                     .padding(.horizontal)
                     .frame(maxWidth: 500)
+
                 GatherlyTextField(title: "Password", text: $password)
                     .padding(.horizontal)
                     .frame(maxWidth: 500)
                     .padding(.bottom, 10)
-                if let error = vm.errMessage {
-                    Text(error)
+
+                if case let .error(err) = vm.loadingState {
+                    Text(err)
+                        .foregroundColor(.red)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
                 }
                 
+                signupLoginButton
+
                 Button {
-                    vm.login(email: vm.username, password: password)
+                    isSignup.toggle()
                 } label: {
-                    GatherlyButton(text: "Log in", textColor: .primary, borderColor: .cyan)
-                }
-                Button {
-                    
-                } label: {
-                    GatherlyButton(text: "Sign up", textColor: .black, backgroundColor: .white, borderColor: .white.opacity(0.6))
+                    Text(isSignup ? "Already have an account? Log in" : "Don’t have an account? Sign up")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                        .padding(.top, 4)
                 }
             }
         }
+        .animation(.snappy, value: isSignup)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .padding()
     }
     
-    func validateEmail() -> Bool {
-        // TODO: 
-        return true
+    var signupLoginButton: some View {
+        Button {
+            if isSignup {
+                vm.signup(username: username, email: email, password: password)
+            } else {
+                vm.login(email: email, password: password)
+            }
+        } label: {
+            GatherlyButton(
+                text: isSignup ? "Create Account" : "Log In",
+                textColor: .primary,
+                borderColor: .cyan
+            )
+        }
     }
+
 }
+
 
 struct GatherlyTextField: View {
     var title: String
