@@ -9,7 +9,7 @@ const options = {
   definition: {
     openapi: "3.1.0",
     info: {
-      title: "gatherly API",
+      title: "Gatherly API",
       version: "0.1.0",
       description:
         "This is a simple CRUD API application made with Express and documented with Swagger"
@@ -21,7 +21,7 @@ const options = {
       },
     ],
   },
-  apis: ["./routes/*.js"],
+  apis: ["./src/docs/*.js"],
 };
 
 const specs = swaggerJSDoc(options);
@@ -33,7 +33,7 @@ app.use(express.json())
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes)
 app.use(
-    "/docs",
+    '/docs',
     serve,
     setup(specs)
 )
