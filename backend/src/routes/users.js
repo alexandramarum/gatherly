@@ -3,7 +3,7 @@ import { db } from '../config/firebase.js';
 
 const router = express.Router();
 
-// Get all Users
+// Get all users
 router.get("/", async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get User by PID
+// Get user by PID
 router.get("/:pid", async (req, res) => {
   const { pid } = req.params;
 
@@ -43,7 +43,7 @@ router.get("/:pid", async (req, res) => {
   }
 });
 
-// Create a User
+// Create a user
 router.post("/", async (req, res) => {
   const { pid, username } = req.body;
 
@@ -71,7 +71,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Update a user (self or admin)
+// Update a user
 router.put("/:pid", async (req, res) => {
   const { pid } = req.params;
   const { email, rsvpEvents, username } = req.body;
@@ -102,7 +102,7 @@ router.put("/:pid", async (req, res) => {
   }
 });
 
-// Delete a user (self or admin)
+// Delete a user
 router.delete("/:pid", async (req, res) => {
   const { pid } = req.params;
 
