@@ -1,10 +1,9 @@
 import express from 'express';
 import { db } from '../config/firebase.js';
-import authenticateToken from '../middleware/authToken.js';
 
 const router = express.Router();
 
-// Get all Events (public)
+// Get all Events
 router.get("/", async (req, res) => {
   try {
     const snapshot = await db.collection('events').get();
@@ -26,7 +25,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get Event by ID (public)
+// Get Event by ID
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -47,21 +46,27 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Create an Event (authenticated)
-router.post("/", authenticateToken, async (req, res) => {
-  const { timestamp, description, location, title } = req.body;
+// Create an Event
+router.post("/", async (req, res) => {
+  const { 
+    creatorPid, 
+    timestamp, 
+    description, 
+    location, 
+    title 
+  } = req.body;
 
-  if (!timestamp || !title || !location || !description) {
+  if (!creatorPid || !timestamp || !description || !title || !location) {
     return res.status(400).json({ error: "Event details are required" });
   }
 
   const data = {
-    timestamp,
+    creatorPid, 
+    timestamp, 
     description,
-    location,
-    title,
-    createdBy: req.user.uid,
-  };
+    location, 
+    title
+  }
 
   try {
     const docRef = await db.collection('events').add(data);
@@ -72,10 +77,10 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Update an Event (authenticated)
-router.put("/:id", authenticateToken, async (req, res) => {
+// Update an Event
+router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { timestamp, description, location, title } = req.body;
+  const { creatorPid, timestamp, description, location, title } = req.body;
 
   const updatedFields = {};
   if (timestamp) updatedFields.timestamp = timestamp;
@@ -96,8 +101,8 @@ router.put("/:id", authenticateToken, async (req, res) => {
     }
 
     const event = snap.data();
-    if (event.createdBy !== req.user.uid) {
-      return res.status(403).json({ error: "Unauthorized to update this event" });
+    if (event.creatorPid !== creatorPid) {
+      return res.status(403).json({ error: "Unauthorized: creatorPid does not match" });
     }
 
     await eventRef.update(updatedFields);
@@ -109,8 +114,9 @@ router.put("/:id", authenticateToken, async (req, res) => {
 });
 
 // Delete an Event by ID (authenticated)
-router.delete("/:id", authenticateToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const { id } = req.params;
+  const { creatorPid } = req.body
 
   try {
     const eventRef = db.collection("events").doc(id);
@@ -121,11 +127,8 @@ router.delete("/:id", authenticateToken, async (req, res) => {
     }
 
     const event = snap.data();
-    const isOwner = event.createdBy === req.user.uid;
-    const isAdmin = req.user.admin === true;
-
-    if (!isOwner && !isAdmin) {
-      return res.status(403).json({ error: "Unauthorized to delete this event" });
+    if (event.creatorPid !== creatorPid) {
+      return res.status(403).json({ error: "Unauthorized: creatorPid does not match" });
     }
 
     await eventRef.delete();

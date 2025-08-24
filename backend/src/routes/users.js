@@ -1,94 +1,84 @@
 import express from 'express';
 import { db } from '../config/firebase.js';
-import authenticateToken from '../middleware/authToken.js';
 
 const router = express.Router();
 
-// Get all Users (admin only)
-router.get("/", authenticateToken, async (req, res) => {
-  if (!req.user.admin) {
-    return res.status(403).json({ error: "Forbidden: Admins only" });
-  }
-
+// Get all Users
+router.get("/", async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
 
     if (snapshot.empty) {
-      return res.status(404).json({ error: 'No users found' });
+      return res.status(200).json({ users: [] });
     }
 
     const users = snapshot.docs.map(doc => ({
-      id: doc.id,
       ...doc.data()
     }));
 
     console.log('Fetched all users');
     res.status(200).json({ users });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 
-// Get User by ID (self or admin)
-router.get("/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params;
-
-  if (req.user.uid !== id && !req.user.admin) {
-    return res.status(403).json({ error: "Forbidden: Cannot access other users" });
-  }
+// Get User by PID
+router.get("/:pid", async (req, res) => {
+  const { pid } = req.params;
 
   try {
-    const doc = await db.collection('users').doc(id).get();
+    const snapshot = await db.collection('users').where('pid', '==', pid).get();
 
-    if (!doc.exists) {
+    if (snapshot.empty) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    console.log('Fetched user', id);
-    res.status(200).json({
-      id: doc.id,
-      ...doc.data()
-    });
+    const user = snapshot.docs[0].data();
+
+    console.log('Fetched user', pid);
+    res.status(200).json(user);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
-// Create a user profile (uses logged-in user UID)
-router.post("/", authenticateToken, async (req, res) => {
-  const { email, username } = req.body;
-  const userId = req.user.uid;
+// Create a User
+router.post("/", async (req, res) => {
+  const { pid, username } = req.body;
 
-  if (!email || !username) {
-    return res.status(400).json({ error: "Email and username are required" });
+  if (!pid || !username) {
+    return res.status(400).json({ error: "pid and username are required" });
   }
 
   const data = {
-    email,
-    username,
-    savedEventIds: []
+    pid,
+    rsvpEvents: [],
+    username
   };
 
   try {
-    await db.collection('users').doc(userId).set(data);
-    console.log('Created new user:', username);
-    res.status(201).json({ message: 'User created', userId });
+    const snapshot = await db.collection('users').where('pid', '==', pid).get();
+    if (snapshot.empty) {
+      await db.collection('users').add(data);
+      console.log('Created new user:', username);
+      res.status(201).json({ message: 'User created', pid });
+    } else {
+      res.status(400).json({ message: 'PID already in use', pid})
+    }
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 });
 
 // Update a user (self or admin)
-router.put("/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params;
-  const { email, username } = req.body;
-
-  if (req.user.uid !== id && !req.user.admin) {
-    return res.status(403).json({ error: "Forbidden: Cannot update other users" });
-  }
+router.put("/:pid", async (req, res) => {
+  const { pid } = req.params;
+  const { email, rsvpEvents, username } = req.body;
 
   const updatedFields = {};
   if (email) updatedFields.email = email;
+  if (Array.isArray(rsvpEvents)) updatedFields.rsvpEvents = rsvpEvents
   if (username) updatedFields.username = username;
 
   if (Object.keys(updatedFields).length === 0) {
@@ -96,16 +86,16 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 
   try {
-    const userRef = db.collection("users").doc(id);
-    const snap = await userRef.get();
+    const snapshot = await db.collection('users').where('pid', '==', pid).get();
 
-    if (!snap.exists) {
+    if (snapshot.empty) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    await userRef.update(updatedFields);
+    const userDoc = snapshot.docs[0].ref;
+    await userDoc.update(updatedFields);
 
-    console.log(`Updated user ${id}`);
+    console.log(`Updated user ${pid}`);
     res.status(200).json({ message: "User updated", updatedFields });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -113,16 +103,20 @@ router.put("/:id", authenticateToken, async (req, res) => {
 });
 
 // Delete a user (self or admin)
-router.delete("/:id", authenticateToken, async (req, res) => {
-  const { id } = req.params;
-
-  if (req.user.uid !== id && !req.user.admin) {
-    return res.status(403).json({ error: "Forbidden: Cannot delete other users" });
-  }
+router.delete("/:pid", async (req, res) => {
+  const { pid } = req.params;
 
   try {
-    await db.collection("users").doc(id).delete();
-    console.log(`Deleted user ${id}`);
+    const snapshot = await db.collection('users').where('pid', '==', pid).get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userDoc = snapshot.docs[0].ref;
+    await userDoc.delete();
+
+    console.log(`Deleted user ${pid}`);
     res.status(200).json({ message: "User deleted" });
   } catch (error) {
     res.status(500).json({ error: error.message });
