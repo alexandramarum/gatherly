@@ -16,7 +16,6 @@ const options = {
     },
     servers: [
       {
-        url: "http://localhost:3000",
         url: "https://gatherly-backend-q9vm.onrender.com",
       },
     ],
