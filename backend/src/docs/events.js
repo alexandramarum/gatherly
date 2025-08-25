@@ -2,6 +2,26 @@ import swaggerJSDoc from "swagger-jsdoc";
 
 /**
  * @swagger
+ * /events:
+ *   get:
+ *     summary: Get all events
+ *     tags: [Events]
+ *     responses:
+ *       200:
+ *         description: List of all events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ */
+
+/**
+ * @swagger
  * /events/{id}:
  *   get:
  *     summary: Get a single event by ID
