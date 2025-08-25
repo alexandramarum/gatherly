@@ -19,9 +19,6 @@ import swaggerJSDoc from "swagger-jsdoc";
  *         - pid
  *         - username
  *       properties:
- *         id:
- *           type: string
- *           description: The auto-generated Firestore document ID of the user
  *         pid:
  *           type: string
  *           description: The unique user-facing personal identification of the user
