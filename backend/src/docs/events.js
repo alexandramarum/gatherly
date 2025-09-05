@@ -88,7 +88,7 @@ import swaggerJSDoc from "swagger-jsdoc";
  *               creatorPid:
  *                 type: string
  *               timestamp:
- *                 type: integer
+ *                 type: string
  *               description:
  *                 type: string
  *               location:
