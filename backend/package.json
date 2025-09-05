@@ -1,6 +1,7 @@
 {
   "name": "backend",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,10 +11,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "dotenv": "^17.2.0",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
-    "firebase": "^12.0.0",
-    "firebase-admin": "^13.4.0",
+    "firebase": "^12.2.1",
+    "firebase-admin": "^13.5.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   },

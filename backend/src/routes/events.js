@@ -60,6 +60,16 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "Event details are required" });
   }
 
+  if (
+    typeof(creatorPid) != "string" ||
+    typeof(timestamp) != "string" ||
+    typeof(description) != "string" ||
+    typeof(title) != "string" ||
+    typeof(location) != "string"
+  ) {
+    return res.status(400).json({ error: "Event details must be strings!" })
+  }
+
   const data = {
     creatorPid, 
     timestamp, 
@@ -83,10 +93,10 @@ router.put("/:id", async (req, res) => {
   const { creatorPid, timestamp, description, location, title } = req.body;
 
   const updatedFields = {};
-  if (timestamp) updatedFields.timestamp = timestamp;
-  if (description) updatedFields.description = description;
-  if (location) updatedFields.location = location;
-  if (title) updatedFields.title = title;
+  if (timestamp && typeof(timestamp) == "string") updatedFields.timestamp = timestamp;
+  if (description && typeof(description) == "string") updatedFields.description = description;
+  if (location && typeof(location) == "string") updatedFields.location = location;
+  if (title && typeof(title) == "string") updatedFields.title = title;
 
   if (Object.keys(updatedFields).length === 0) {
     return res.status(400).json({ error: "No fields provided" });

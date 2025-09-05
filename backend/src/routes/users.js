@@ -51,6 +51,10 @@ router.post("/", async (req, res) => {
     return res.status(400).json({ error: "pid and username are required" });
   }
 
+  if (typeof(pid) != "string" || typeof(username) != "string") {
+    return res.status(400).json({ error: "pid and username must be strings!" })
+  }
+
   const data = {
     pid,
     rsvpEvents: [],
@@ -77,9 +81,9 @@ router.put("/:pid", async (req, res) => {
   const { email, rsvpEvents, username } = req.body;
 
   const updatedFields = {};
-  if (email) updatedFields.email = email;
+  if (email && typeof(email) == "string") updatedFields.email = email;
   if (Array.isArray(rsvpEvents)) updatedFields.rsvpEvents = rsvpEvents
-  if (username) updatedFields.username = username;
+  if (username && typeof(username) == "string") updatedFields.username = username;
 
   if (Object.keys(updatedFields).length === 0) {
     return res.status(400).json({ error: "No fields provided" });
