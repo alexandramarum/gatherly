@@ -47,8 +47,8 @@ import swaggerJSDoc from "swagger-jsdoc";
  *           type: string
  *           description: The PID of the user who created the event
  *         timestamp:
- *           type: integer
- *           description: The event timestamp (Unix seconds)
+ *           type: string
+ *           description: The event timestamp
  *         description:
  *           type: string
  *           description: The detailed description of the event
