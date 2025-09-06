@@ -11,16 +11,13 @@ router.post('/:eventId', async (req, res) => {
     if (!image) return res.status(400).json({ error: "No image provided" });
 
     try {
-        cloudinary.uploader.upload_large(image, {
+        await cloudinary.uploader.upload_large(image, {
         public_id: eventId,
         overwrite: true,
         quality: "auto"
         })
 
-        res.status(200).json({
-        message: `Image fetched successfully for event '${eventId}'`,
-        data: result
-        });
+        res.status(200).json({ message: `Image uploaded successfully for event '${eventId}'` });
     } catch (error) {
         res.status(500).json({
             error: `Failed to upload image for event '${eventId}'`,

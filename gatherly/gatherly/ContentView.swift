@@ -13,17 +13,38 @@ struct ContentView: View {
     @State private var selectionData: Data?
     @State private var isUploading = false
     @State private var uploadResult: String?
+    @State private var fetchedImageURL: String?
+    @State private var deleteResult: String?
 
-    let service = GatherlyService()
+    let service = ImageService()
+    let eventId = "123456" // Example event ID
     
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
             if let selectionData,
                let uiImage = UIImage(data: selectionData) {
+                Text("Selected image")
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
                     .frame(height: 200)
+            } else if let urlString = fetchedImageURL,
+                      let url = URL(string: urlString) {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        Text("Fetched image")
+                        image.resizable()
+                            .scaledToFit()
+                            .frame(height: 200)
+                    case .failure(_):
+                        Text("Failed to load image")
+                    case .empty:
+                        ProgressView()
+                    @unknown default:
+                        EmptyView()
+                    }
+                }
             } else {
                 Text("No photo selected")
                     .foregroundColor(.gray)
@@ -40,19 +61,46 @@ struct ContentView: View {
                 Task {
                     guard let data = selectionData else { return }
                     isUploading = true
-                    let success = await service.upload(eventId: "12345", imageData: data)
+                    let success = await service.upload(eventId: eventId, imageData: data)
                     isUploading = false
                     uploadResult = success ? "✅ Upload successful" : "❌ Upload failed"
                 }
             }
             .disabled(selectionData == nil || isUploading)
-            .padding()
             
             if let uploadResult {
                 Text(uploadResult)
                     .foregroundColor(uploadResult.contains("✅") ? .green : .red)
             }
+            
+            Divider()
+                .padding()
+            
+            Button("Fetch") {
+                Task {
+                    if let url = await service.fetch(eventId: eventId) {
+                        selectionData = nil
+                        fetchedImageURL = url
+                        print(fetchedImageURL)
+                    }
+                }
+            }
+            
+            // Delete button
+            Button("Delete") {
+                Task {
+                    let success = await service.delete(eventId: eventId)
+                    deleteResult = success ? "✅ Deleted successfully" : "❌ Delete failed"
+                    if success { fetchedImageURL = nil; selectionData = nil }
+                }
+            }
+            
+            if let deleteResult {
+                Text(deleteResult)
+                    .foregroundColor(deleteResult.contains("✅") ? .green : .red)
+            }
         }
+        .padding()
         .onChange(of: selection) { item in
             Task {
                 if let data = try? await item?.loadTransferable(type: Data.self) {
@@ -62,37 +110,6 @@ struct ContentView: View {
         }
     }
 }
-
-class GatherlyService {
-    let base: URL = URL(string: "https://gatherly-backend-q9vm.onrender.com/")!
-    
-    func upload(eventId: String, imageData: Data) async -> Bool {
-        let path = base.appendingPathComponent("images/\(eventId)")
-        var request = URLRequest(url: path)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        let base64String = imageData.base64EncodedString()
-        let dataURI = "data:image/png;base64,\(base64String)"
-        let body: [String: String] = ["image": dataURI]
-        
-        do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            let (data, response) = try await URLSession.shared.data(for: request)
-            
-            if let httpResponse = response as? HTTPURLResponse {
-                print("Status:", httpResponse.statusCode)
-                print("Response body:", String(data: data, encoding: .utf8) ?? "none")
-                return httpResponse.statusCode == 200
-            }
-        } catch {
-            print("Upload error:", error)
-        }
-        
-        return false
-    }
-}
-
 
 #Preview {
     ContentView()
