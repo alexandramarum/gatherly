@@ -1,7 +1,10 @@
 import {v2 as cloudinary} from 'cloudinary';
+import 'dotenv/config'
 
 cloudinary.config({
-  cloud_name: 'divtrxq1d',
-  api_key: '<your_api_key>',
-  api_secret: '<your_api_secret>'
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_KEY,
+  api_secret: process.env.CLOUD_SECRET
 });
+
+export default cloudinary

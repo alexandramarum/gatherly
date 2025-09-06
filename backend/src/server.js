@@ -2,6 +2,7 @@ import express from 'express';
 import 'dotenv/config';
 import userRoutes from './routes/users.js';
 import eventRoutes from './routes/events.js';
+import imageRoutes from './routes/image.js';
 import swaggerJSDoc from 'swagger-jsdoc';
 import { serve, setup } from 'swagger-ui-express';
 
@@ -31,6 +32,7 @@ app.use(express.json())
 
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes)
+app.use('/images', imageRoutes)
 app.use(
     '/docs',
     serve,
