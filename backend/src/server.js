@@ -28,7 +28,7 @@ const specs = swaggerJSDoc(options);
 
 const app = express()
 
-app.use(express.json())
+app.use(express.json({ limit: '100mb' }));
 
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes)
