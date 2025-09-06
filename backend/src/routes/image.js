@@ -11,7 +11,7 @@ router.post('/:eventId', async (req, res) => {
     if (!image) return res.status(400).json({ error: "No image provided" });
 
     try {
-        cloudinary.uploader.upload(image, {
+        cloudinary.uploader.upload_large(image, {
         public_id: eventId,
         overwrite: true,
         quality: "auto"
