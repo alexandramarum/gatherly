@@ -53,7 +53,8 @@ router.post("/", async (req, res) => {
     timestamp, 
     description, 
     location, 
-    title 
+    title,
+    image_url
   } = req.body;
 
   if (!creatorPid || !timestamp || !description || !title || !location) {
@@ -65,7 +66,8 @@ router.post("/", async (req, res) => {
     typeof(timestamp) != "string" ||
     typeof(description) != "string" ||
     typeof(title) != "string" ||
-    typeof(location) != "string"
+    typeof(location) != "string" ||
+    (image_url && typeof image_url !== "string")
   ) {
     return res.status(400).json({ error: "Event details must be strings!" })
   }
@@ -77,6 +79,7 @@ router.post("/", async (req, res) => {
     location, 
     title
   }
+  if (image_url) data.image_url = image_url;
 
   try {
     const docRef = await db.collection('events').add(data);
@@ -90,13 +93,14 @@ router.post("/", async (req, res) => {
 // Update an Event
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { creatorPid, timestamp, description, location, title } = req.body;
+  const { creatorPid, timestamp, description, location, title, image_url } = req.body;
 
   const updatedFields = {};
   if (timestamp && typeof(timestamp) == "string") updatedFields.timestamp = timestamp;
   if (description && typeof(description) == "string") updatedFields.description = description;
   if (location && typeof(location) == "string") updatedFields.location = location;
   if (title && typeof(title) == "string") updatedFields.title = title;
+  if (image_url && typeof image_url === "string") updatedFields.image_url = image_url;
 
   if (Object.keys(updatedFields).length === 0) {
     return res.status(400).json({ error: "No fields provided" });

@@ -1,5 +1,6 @@
 import express from 'express'
 import cloudinary from '../config/cloudinary.js'
+import { db } from '../config/firebase.js'
 
 const router = express.Router();
 
@@ -11,11 +12,17 @@ router.post('/:eventId', async (req, res) => {
     if (!image) return res.status(400).json({ error: "No image provided" });
 
     try {
-        await cloudinary.uploader.upload_large(image, {
+        const result = await cloudinary.uploader.upload_large(image, {
         public_id: eventId,
         overwrite: true,
         quality: "auto"
         })
+
+        console.log(`"result: ${result.secure_url}"`)
+
+        await db.collection("events").doc(eventId).update({
+            image_url: result.secure_url
+        });
 
         res.status(200).json({ message: `Image uploaded successfully for event '${eventId}'` });
     } catch (error) {

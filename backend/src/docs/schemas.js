@@ -60,6 +60,10 @@ import swaggerJSDoc from "swagger-jsdoc";
  *         title:
  *           type: string
  *           description: The title of the event
+ *         image_url:
+ *          type: string
+ *          nullable: true
+ *          description: Optional URL of the uploaded image associated with this event
  * 
  *     Image:
  *       type: object

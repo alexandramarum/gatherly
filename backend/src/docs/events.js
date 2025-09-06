@@ -14,7 +14,7 @@ import swaggerJSDoc from "swagger-jsdoc";
  *             schema:
  *               type: object
  *               properties:
- *                 users:
+ *                 events:
  *                   type: array
  *                   items:
  *                     $ref: '#/components/schemas/Event'
@@ -55,12 +55,32 @@ import swaggerJSDoc from "swagger-jsdoc";
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Event'
+ *             type: object
+ *             required:
+ *               - creatorPid
+ *               - timestamp
+ *               - description
+ *               - location
+ *               - title
+ *             properties:
+ *               creatorPid:
+ *                 type: string
+ *               timestamp:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               image_url:
+ *                 type: string
+ *                 description: Optional URL of an uploaded image
  *     responses:
  *       201:
  *         description: Event created successfully
  *       400:
- *         description: Missing required fields
+ *         description: Missing required fields or invalid types
  */
 
 /**
@@ -95,13 +115,16 @@ import swaggerJSDoc from "swagger-jsdoc";
  *                 type: string
  *               title:
  *                 type: string
+ *               image_url:
+ *                 type: string
+ *                 description: Optional URL of an uploaded image
  *     responses:
  *       200:
  *         description: Event updated
  *       400:
  *         description: No fields provided or missing creatorPid
  *       403:
- *         description: "Unauthorized: creatorPid does not match"
+ *         description: Unauthorized: creatorPid does not match
  *       404:
  *         description: Event not found
  */
@@ -134,7 +157,7 @@ import swaggerJSDoc from "swagger-jsdoc";
  *       200:
  *         description: Event deleted
  *       403:
- *         description: "Unauthorized: creatorPid does not match"
+ *         description: Unauthorized: creatorPid does not match
  *       404:
  *         description: Event not found
  */
