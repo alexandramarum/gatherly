@@ -13,7 +13,8 @@ router.post('/:eventId', async (req, res) => {
     try {
         cloudinary.uploader.upload(image, {
         public_id: eventId,
-        overwrite: true
+        overwrite: true,
+        quality: "auto"
         })
             .then(result => { console.log(result) })
             .catch(error => { console.log(error) })
