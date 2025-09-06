@@ -16,8 +16,6 @@ router.post('/:eventId', async (req, res) => {
         overwrite: true,
         quality: "auto"
         })
-            .then(result => { console.log(result) })
-            .catch(error => { console.log(error) })
 
         res.status(200).json({
         message: `Image fetched successfully for event '${eventId}'`,
