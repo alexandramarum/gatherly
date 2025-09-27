@@ -2,37 +2,8 @@ import swaggerJSDoc from "swagger-jsdoc";
 
 /**
  * @swagger
- * tags:
- *   - name: Users
- *     description: User management
- *   - name: Events
- *     description: Event management
- *   - name: Images
- *     description: Image upload, fetch, and deletion
- */
-
-/**
- * @swagger
  * components:
  *   schemas:
- *     User:
- *       type: object
- *       required:
- *         - pid
- *         - username
- *       properties:
- *         pid:
- *           type: string
- *           description: The unique user-facing personal identification of the user
- *         username:
- *           type: string
- *           description: The display name of the user
- *         rsvpEvents:
- *           type: array
- *           items:
- *             type: string
- *           description: Array of event IDs the user has RSVP'd to
- *
  *     Event:
  *       type: object
  *       required:

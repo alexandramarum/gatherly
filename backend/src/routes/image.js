@@ -4,34 +4,49 @@ import { db } from '../config/firebase.js'
 
 const router = express.Router();
 
-// Upload an image
 router.post('/:eventId', async (req, res) => {
-    const { eventId } = req.params
-    const { image } = req.body
+    const { eventId } = req.params;
+    const { image } = req.body;
 
     if (!image) return res.status(400).json({ error: "No image provided" });
 
     try {
+        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload_large(image, {
-        public_id: eventId,
-        overwrite: true,
-        quality: "auto"
-        })
+            public_id: eventId,
+            overwrite: true,
+            quality: "auto"
+        });
 
-        console.log(`"result: ${result.secure_url}"`)
+        console.log("Cloudinary result:", result);
 
+        if (!result || !result.secure_url) {
+            console.error("Upload did not return a secure_url:", result);
+            return res.status(500).json({
+                error: `Upload failed for event '${eventId}'`,
+                details: result
+            });
+        }
+
+        // Update Firestore with the uploaded URL
         await db.collection("events").doc(eventId).update({
             image_url: result.secure_url
         });
 
-        res.status(200).json({ message: `Image uploaded successfully for event '${eventId}'` });
+        // Respond with success and the URL
+        res.status(200).json({
+            message: `Image uploaded successfully for event '${eventId}'`,
+            image_url: result.secure_url
+        });
+
     } catch (error) {
+        console.error("Upload exception:", error);
         res.status(500).json({
             error: `Failed to upload image for event '${eventId}'`,
             details: error.message
         });
     }
-})
+});
 
 // Fetch an image
 router.get('/:eventId', async (req, res) => {
